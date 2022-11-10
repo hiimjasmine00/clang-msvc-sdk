@@ -162,8 +162,8 @@ if(${LLVM_NM_PATH} STREQUAL "LLVM_NM_PATH-NOTFOUND")
 endif()
 
 # Attempt to find the llvm-mt binary
-#find_program(LLVM_MT_PATH NAMES llvm-mt-${LLVM_VER})
-set(LLVM_MT_PATH "${CMAKE_CURRENT_LIST_DIR}/llvm-mt-wrapper")
+find_program(LLVM_MT_PATH NAMES llvm-mt-${LLVM_VER})
+#set(LLVM_MT_PATH "${CMAKE_CURRENT_LIST_DIR}/llvm-mt-wrapper")
 if(${LLVM_MT_PATH} STREQUAL "LLVM_MT_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find llvm-mt-${LLVM_VER}")
 endif()
@@ -189,9 +189,9 @@ endif()
 
 set(CMAKE_C_COMPILER "${CLANG_CL_PATH}" CACHE FILEPATH "")
 set(CMAKE_CXX_COMPILER "${CLANG_CL_PATH}" CACHE FILEPATH "")
-#set(CMAKE_RC_COMPILER "${LLVM_RC_PATH}" CACHE FILEPATH "")
+set(CMAKE_RC_COMPILER "${LLVM_RC_PATH}" CACHE FILEPATH "")
 # Workaround until llvm-rc parses the .rc files like Microsoft's rc.exe
-set(CMAKE_RC_COMPILER "${CMAKE_CURRENT_LIST_DIR}/llvm-rc-wrapper" CACHE FILEPATH "")
+#set(CMAKE_RC_COMPILER "${CMAKE_CURRENT_LIST_DIR}/llvm-rc-wrapper" CACHE FILEPATH "")
 set(CMAKE_LINKER "${LLD_LINK_PATH}" CACHE FILEPATH "")
 set(CMAKE_AR "${LLVM_LIB_PATH}" CACHE FILEPATH "")
 set(CMAKE_NM "${LLVM_NM_PATH}" CACHE FILEPATH "")
@@ -219,6 +219,8 @@ set(COMPILE_FLAGS
     -imsvc "${WINSDK_INCLUDE}/shared"
     -imsvc "${WINSDK_INCLUDE}/um"
     -imsvc "${WINSDK_INCLUDE}/winrt")
+    
+link_libraries(user32 kernel32)
 
 if(case_sensitive_filesystem)
   # Ensure all sub-configures use the top-level VFS overlay instead of generating their own.
