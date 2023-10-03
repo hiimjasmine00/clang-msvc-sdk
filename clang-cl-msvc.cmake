@@ -20,6 +20,9 @@ macro(cmake_getconf VAR)
     if(${VAR})
       set(${VAR} "${${VAR}}" CACHE STRING "${VAR}")
       message(STATUS "Found ${VAR}: ${${VAR}}")
+    elseif(${ARGC} GREATER 1)
+      set(${VAR} "${ARGV1}" CACHE STRING "${ARGV1}")
+      message(STATUS "Found ${VAR}: ${${VAR}}")
     else()
       message(FATAL_ERROR "Cannot determine \"${VAR}\"")
     endif()
@@ -89,27 +92,12 @@ set(CMAKE_SYSTEM_NAME Windows)
 set(CMAKE_SYSTEM_VERSION 10.0)
 set(CMAKE_SYSTEM_PROCESSOR AMD64)
 
-cmake_getconf(HOST_ARCH)
-cmake_getconf(MSVC_BASE)
-cmake_getconf(WINSDK_BASE)
-cmake_getconf(WINSDK_VER)
-cmake_getconf(LLVM_VER)
-cmake_getconf(CLANG_VER)
+cmake_getconf(SPLAT_DIR)
+cmake_getconf(HOST_ARCH x86)
+cmake_getconf_opt(LLVM_VER)
+cmake_getconf_opt(CLANG_VER)
 cmake_getconf_opt(LLVM_PATH)
 
-if(LLVM_VER STREQUAL "")
-  set(LLVM_VER 11)
-  message(STATUS "LLVM_VER not set assuming version ${LLVM_VER}")
-endif()
-
-if(CLANG_VER STREQUAL "")
-  set(CLANG_VER 11)
-  message(STATUS "CLANG_VER not set assuming version ${CLANG_VER}")
-endif()
-
-if(NOT HOST_ARCH)
-  set(HOST_ARCH x86_64)
-endif()
 if(HOST_ARCH STREQUAL "aarch64" OR HOST_ARCH STREQUAL "arm64")
   set(TRIPLE_ARCH "aarch64")
   set(WINSDK_ARCH "arm64")
@@ -126,25 +114,14 @@ else()
   message(SEND_ERROR "Unknown host architecture ${HOST_ARCH}. Must be aarch64 (or arm64), armv7 (or arm), i686 (or x86), or x86_64 (or x64).")
 endif()
 
-set(MSVC_INCLUDE "${MSVC_BASE}/include")
-set(MSVC_LIB "${MSVC_BASE}/lib")
-set(WINSDK_INCLUDE "${WINSDK_BASE}/Include/${WINSDK_VER}")
-set(WINSDK_LIB "${WINSDK_BASE}/Lib/${WINSDK_VER}")
+set(MSVC_INCLUDE "${SPLAT_DIR}/crt/include")
+set(MSVC_LIB "${SPLAT_DIR}/crt/lib")
+set(WINSDK_INCLUDE "${SPLAT_DIR}/sdk/include")
+set(WINSDK_LIB "${SPLAT_DIR}/sdk/lib")
 
-if(NOT EXISTS "${MSVC_BASE}" OR
-   NOT EXISTS "${MSVC_INCLUDE}" OR
-   NOT EXISTS "${MSVC_LIB}")
+if(NOT EXISTS "${MSVC_INCLUDE}" OR NOT EXISTS "${MSVC_LIB}" OR NOT EXISTS "${WINSDK_INCLUDE}" OR NOT EXISTS "${WINSDK_LIB}")
   message(SEND_ERROR
-          "CMake variable MSVC_BASE must point to a folder containing MSVC "
-          "system headers and libraries")
-endif()
-
-if(NOT EXISTS "${WINSDK_BASE}" OR
-   NOT EXISTS "${WINSDK_INCLUDE}" OR
-   NOT EXISTS "${WINSDK_LIB}")
-  message(SEND_ERROR
-          "CMake variable WINSDK_BASE and WINSDK_VER must resolve to a valid "
-          "Windows SDK installation")
+          "CMake variable SPLAT_DIR must point to a folder containing the xwin splat.")
 endif()
 
 if(NOT EXISTS "${WINSDK_INCLUDE}/um/Windows.h")
@@ -155,50 +132,50 @@ if(NOT EXISTS "${WINSDK_INCLUDE}/um/WINDOWS.H")
 endif()
 
 # Attempt to find the clang-cl binary
-find_program(CLANG_CL_PATH NAMES clang-cl-${CLANG_VER} clang-cl PATHS ${LLVM_PATH})
+find_program(CLANG_CL_PATH NAMES clang-cl-${CLANG_VER} clang-cl clang-cl-17 clang-cl-16 clang-cl-15 clang-cl-14 clang-cl-13 PATHS ${LLVM_PATH})
 if(${CLANG_CL_PATH} STREQUAL "CLANG_CL_PATH-NOTFOUND")
-  message(SEND_ERROR "Unable to find clang-cl-${CLANG_VER}")
+  message(SEND_ERROR "Unable to find clang-cl")
 endif()
 
 # Attempt to find the llvm-link binary
-find_program(LLD_LINK_PATH NAMES lld-link-${LLVM_VER} lld-link PATHS ${LLVM_PATH})
+find_program(LLD_LINK_PATH NAMES lld-link-${LLVM_VER} lld-link lld-link-17 lld-link-16 lld-link-15 lld-link-14 lld-link-13 PATHS ${LLVM_PATH})
 if(${LLD_LINK_PATH} STREQUAL "LLD_LINK_PATH-NOTFOUND")
-  message(SEND_ERROR "Unable to find lld-link-${LLVM_VER}")
+  message(SEND_ERROR "Unable to find lld-link")
 endif()
 
 # Attempt to find the lld-lib binary
-find_program(LLVM_LIB_PATH NAMES llvm-lib-${LLVM_VER} llvm-lib PATHS ${LLVM_PATH})
+find_program(LLVM_LIB_PATH NAMES llvm-lib-${LLVM_VER} llvm-lib llvm-lib-17 llvm-lib-16 llvm-lib-15 llvm-lib-14 llvm-lib-13 PATHS ${LLVM_PATH})
 if(${LLVM_LIB_PATH} STREQUAL "LLVM_LIB_PATH-NOTFOUND")
-  message(SEND_ERROR "Unable to find llvm-lib-${LLVM_VER}")
+  message(SEND_ERROR "Unable to find llvm-lib")
 endif()
 
 # Attempt to find the llvm-nm binary
-find_program(LLVM_NM_PATH NAMES llvm-nm-${LLVM_VER} llvm-nm PATHS ${LLVM_PATH})
+find_program(LLVM_NM_PATH NAMES llvm-nm-${LLVM_VER} llvm-nm llvm-nm-17 llvm-nm-16 llvm-nm-15 llvm-nm-14 llvm-nm-13 PATHS ${LLVM_PATH})
 if(${LLVM_NM_PATH} STREQUAL "LLVM_NM_PATH-NOTFOUND")
-  message(SEND_ERROR "Unable to find llvm-nm-${LLVM_VER}")
+  message(SEND_ERROR "Unable to find llvm-nm")
 endif()
 
 # Attempt to find the llvm-mt binary
-find_program(LLVM_MT_PATH NAMES llvm-mt-${LLVM_VER} llvm-mt PATHS ${LLVM_PATH})
+find_program(LLVM_MT_PATH NAMES llvm-mt-${LLVM_VER} llvm-mt llvm-mt-17 llvm-mt-16 llvm-mt-15 llvm-mt-14 llvm-mt-13 PATHS ${LLVM_PATH})
 #set(LLVM_MT_PATH "${CMAKE_CURRENT_LIST_DIR}/llvm-mt-wrapper")
 if(${LLVM_MT_PATH} STREQUAL "LLVM_MT_PATH-NOTFOUND")
-  message(SEND_ERROR "Unable to find llvm-mt-${LLVM_VER}")
+  message(SEND_ERROR "Unable to find llvm-mt")
 endif()
 
 # Attempt to find the native clang binary
-find_program(CLANG_C_PATH NAMES clang-${CLANG_VER} clang PATHS ${LLVM_PATH})
+find_program(CLANG_C_PATH NAMES clang-${CLANG_VER} clang clang-17 clang-16 clang-15 clang-14 clang-13 PATHS ${LLVM_PATH})
 if(${CLANG_C_PATH} STREQUAL "CLANG_C_PATH-NOTFOUND")
-  message(SEND_ERROR "Unable to find clang-${CLANG_VER}")
+  message(SEND_ERROR "Unable to find clang")
 endif()
 
 # Attempt to find the native clang++ binary
-find_program(CLANG_CXX_PATH NAMES clang++-${CLANG_VER} clang++ PATHS ${LLVM_PATH})
+find_program(CLANG_CXX_PATH NAMES clang++-${CLANG_VER} clang++ clang++-17 clang++-16 clang++-15 clang++-14 clang++-13 PATHS ${LLVM_PATH})
 if(${CLANG_CXX_PATH} STREQUAL "CLANG_CXX_PATH-NOTFOUND")
-  message(SEND_ERROR "Unable to find clang++-${CLANG_VER}")
+  message(SEND_ERROR "Unable to find clang++")
 endif()
 
 # Attempt to find the llvm-rc binary
-find_program(LLVM_RC_PATH NAMES llvm-rc-${LLVM_VER} llvm-rc PATHS ${LLVM_PATH})
+find_program(LLVM_RC_PATH NAMES llvm-rc-${LLVM_VER} llvm-rc llvm-rc-17 llvm-rc-16 llvm-rc-15 llvm-rc-14 llvm-rc-13 PATHS ${LLVM_PATH})
 if(${LLVM_RC_PATH} STREQUAL "LLVM_RC_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find rc")
 endif()
@@ -242,7 +219,7 @@ if(case_sensitive_filesystem)
   init_user_prop(winsdk_vfs_overlay_path)
   if(NOT winsdk_vfs_overlay_path)
     set(winsdk_vfs_overlay_path "${CMAKE_BINARY_DIR}/winsdk_vfs_overlay.yaml")
-    generate_winsdk_vfs_overlay("${WINSDK_BASE}/Include/${WINSDK_VER}" "${winsdk_vfs_overlay_path}")
+    generate_winsdk_vfs_overlay("${WINSDK_INCLUDE}" "${winsdk_vfs_overlay_path}")
     init_user_prop(winsdk_vfs_overlay_path)
   endif()
   list(APPEND COMPILE_FLAGS
@@ -286,11 +263,11 @@ if(case_sensitive_filesystem)
   init_user_prop(winsdk_lib_symlinks_dir)
   if(NOT winsdk_lib_symlinks_dir)
     set(winsdk_lib_symlinks_dir "${CMAKE_BINARY_DIR}/winsdk_lib_symlinks")
-    generate_winsdk_lib_symlinks("${WINSDK_BASE}/Lib/${WINSDK_VER}/um/${WINSDK_ARCH}" "${winsdk_lib_symlinks_dir}")
+    generate_winsdk_lib_symlinks("${WINSDK_LIB}/um/${WINSDK_ARCH}" "${winsdk_lib_symlinks_dir}")
     init_user_prop(winsdk_lib_symlinks_dir)
   endif()
   list(APPEND LINK_FLAGS
-       -libpath:"${winsdk_lib_symlinks_dir}")
+        -libpath:"${winsdk_lib_symlinks_dir}")
 endif()
 
 string(REPLACE ";" " " LINK_FLAGS "${LINK_FLAGS}")
