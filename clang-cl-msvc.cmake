@@ -204,7 +204,7 @@ set(COMPILE_FLAGS
     -Xclang -fexceptions -Xclang -fcxx-exceptions -Xclang
     -D_CRT_SECURE_NO_WARNINGS
     --target=${TRIPLE_ARCH}-windows-msvc
-    -fms-compatibility-version=19.11
+    -fms-compatibility-version=19.37
     -Wno-unused-command-line-argument # Needed to accept projects pushing both -Werror and /MP
     -imsvc "${MSVC_INCLUDE}"
     -imsvc "${WINSDK_INCLUDE}/ucrt"
