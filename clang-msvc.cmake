@@ -195,7 +195,7 @@ list(APPEND _CTF_NATIVE_DEFAULT "-DCMAKE_CXX_COMPILER=${CLANG_CXX_PATH}")
 set(CROSS_TOOLCHAIN_FLAGS_NATIVE "${_CTF_NATIVE_DEFAULT}" CACHE STRING "")
 
 set(COMPILE_FLAGS
-    -Xclang -fexceptions -Xclang -fcxx-exceptions -Xclang
+    -fexceptions -fcxx-exceptions
     -D_CRT_SECURE_NO_WARNINGS
     --target=${TRIPLE_ARCH}-windows-msvc
     -fms-compatibility-version=19.37
@@ -217,7 +217,7 @@ if(case_sensitive_filesystem)
     init_user_prop(winsdk_vfs_overlay_path)
   endif()
   list(APPEND COMPILE_FLAGS
-       -Xclang -ivfsoverlay -Xclang "${winsdk_vfs_overlay_path}")
+       -ivfsoverlay "${winsdk_vfs_overlay_path}")
 
   set(CMAKE_CLANG_VFS_OVERLAY "${winsdk_vfs_overlay_path}")
 endif()
