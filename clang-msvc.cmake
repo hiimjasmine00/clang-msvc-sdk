@@ -219,7 +219,7 @@ if(case_sensitive_filesystem)
   list(APPEND COMPILE_FLAGS
        -ivfsoverlay "${winsdk_vfs_overlay_path}")
 
-  set(CMAKE_CLANG_VFS_OVERLAY "${winsdk_vfs_overlay_path}")
+  #set(CMAKE_CLANG_VFS_OVERLAY "${winsdk_vfs_overlay_path}")
 endif()
 
 string(REPLACE ";" " " COMPILE_FLAGS "${COMPILE_FLAGS}")
