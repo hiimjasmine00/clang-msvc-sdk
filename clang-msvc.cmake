@@ -200,11 +200,11 @@ set(COMPILE_FLAGS
     --target=${TRIPLE_ARCH}-windows-msvc
     -fms-compatibility-version=19.37
     -Wno-unused-command-line-argument # Needed to accept projects pushing both -Werror and /MP
-    -isystem "${MSVC_INCLUDE}"
-    -isystem "${WINSDK_INCLUDE}/ucrt"
-    -isystem "${WINSDK_INCLUDE}/shared"
-    -isystem "${WINSDK_INCLUDE}/um"
-    -isystem "${WINSDK_INCLUDE}/winrt")
+    -isystem"${MSVC_INCLUDE}"
+    -isystem"${WINSDK_INCLUDE}/ucrt"
+    -isystem"${WINSDK_INCLUDE}/shared"
+    -isystem"${WINSDK_INCLUDE}/um"
+    -isystem"${WINSDK_INCLUDE}/winrt")
 
 link_libraries(user32 kernel32 shell32 ole32 crypt32 advapi32 delayimp gdi32)
 
@@ -216,8 +216,7 @@ if(case_sensitive_filesystem)
     generate_winsdk_vfs_overlay("${WINSDK_INCLUDE}" "${winsdk_vfs_overlay_path}")
     init_user_prop(winsdk_vfs_overlay_path)
   endif()
-  list(APPEND COMPILE_FLAGS
-       -ivfsoverlay "${winsdk_vfs_overlay_path}")
+  list(APPEND COMPILE_FLAGS -ivfsoverlay"${winsdk_vfs_overlay_path}")
 
   #set(CMAKE_CLANG_VFS_OVERLAY "${winsdk_vfs_overlay_path}")
 endif()
@@ -230,11 +229,11 @@ string(REPLACE ";" " " COMPILE_FLAGS "${COMPILE_FLAGS}")
 # The assignments to the _INITIAL cache variables don't use FORCE, so they'll
 # only be populated on the initial configure, and their values won't change
 # afterward.
-set(_CMAKE_RC_FLAGS_INITIAL -I "${MSVC_INCLUDE}"
-                            -I "${WINSDK_INCLUDE}/ucrt"
-                            -I "${WINSDK_INCLUDE}/shared"
-                            -I "${WINSDK_INCLUDE}/um"
-                            -I "${WINSDK_INCLUDE}/winrt")
+set(_CMAKE_RC_FLAGS_INITIAL -I"${MSVC_INCLUDE}"
+                            -I"${WINSDK_INCLUDE}/ucrt"
+                            -I"${WINSDK_INCLUDE}/shared"
+                            -I"${WINSDK_INCLUDE}/um"
+                            -I"${WINSDK_INCLUDE}/winrt")
 string(REPLACE ";" " " _CMAKE_RC_FLAGS_INITIAL "${_CMAKE_RC_FLAGS_INITIAL}")
 set(CMAKE_RC_FLAGS "${_CMAKE_RC_FLAGS_INITIAL}" CACHE STRING "" FORCE)
 
