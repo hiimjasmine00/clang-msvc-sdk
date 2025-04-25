@@ -240,7 +240,8 @@ set(_CMAKE_RC_FLAGS_INITIAL -I "${MSVC_INCLUDE}"
                             -I "${WINSDK_INCLUDE}/ucrt"
                             -I "${WINSDK_INCLUDE}/shared"
                             -I "${WINSDK_INCLUDE}/um"
-                            -I "${WINSDK_INCLUDE}/winrt")
+                            -I "${WINSDK_INCLUDE}/winrt"
+                            --target=${TRIPLE_ARCH}-windows-msvc)
 string(REPLACE ";" " " _CMAKE_RC_FLAGS_INITIAL "${_CMAKE_RC_FLAGS_INITIAL}")
 set(CMAKE_RC_FLAGS "${_CMAKE_RC_FLAGS_INITIAL}" CACHE STRING "" FORCE)
 
